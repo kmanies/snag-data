@@ -1,0 +1,25 @@
+Source,Site,Drainage,Sampling Yr,Age,BA,PercentInitial
+BBL,Thompson-1998,somewhat_poorly,2012,14,2847,0.46
+BBL,Thompson-1998,somewhat_poorly,2002,4,6072,0.98
+BBL,Thompson-1998,somewhat_poorly,1999,1,6191,1
+BBL,Thompson-1998,moderately,2012,14,290,0.04
+BBL,Thompson-1998,moderately,2007,9,5883,0.86
+BBL,Thompson-1998,moderately,2002,4,6570,0.96
+BBL,Thompson-1998,moderately,1999,1,6854,1
+BBL,Thompson-1995,moderately,2012,17,858,0.08
+BBL,Thompson-1995,moderately,2007,12,2372,0.23
+BBL,Thompson-1995,moderately,2002,7,9364,0.91
+BBL,Thompson-1995,moderately,1999,4,10235,1
+DG,Chisholm'01,poorly,2010,9,153,0.66
+DG,HouseRiver2,poorly,2010,8,149,0.64
+DG,HR1Burn'02,poorly,2010,8,91,0.39
+DG,MarianaLake'95,poorly,2010,15,8,0.03
+DG,NodderBogN,poorly,2011,0.01,212,0.91
+DG,NodderBogS,poorly,2011,0.01,255,1.09
+DG,Saltaux'01,poorly,2010,8,76,0.33
+DG,Wabasca,poorly,2010,28,21,0.09
+DG,BC'06,poorly,2010,4,250,1.07
+KLM,DeltaTower,well,2000,1,3355,1
+KLM,DeltaTower,well,2012,13,824,0.25
+KLM,DeltaCreek,moderately,2000,1,3950,1
+KLM,DeltaCreek,moderately,2012,13,2946,0.75
