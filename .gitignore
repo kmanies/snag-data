@@ -1,0 +1,8 @@
+
+*.pdf
+
+.Rhistory
+
+.DS_Store
+
+snagBA.txt
