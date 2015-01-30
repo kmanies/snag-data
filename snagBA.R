@@ -41,10 +41,8 @@ snagba$Group <- ifelse(snagba$Source=="DG", "SourceDG", snagba$Site)
 snagba <- snagba[order(snagba$BA, decreasing=TRUE),]
 snagba <- snagba[order(snagba$Group, snagba$Drainage, snagba$Age),]
 
-# By using the highest BA for this calculation you end up using the 4 yr old site for poorly drained
-# sites. Is this the best way? Is it better to do it on the youngest sites, which is what I did
-# in Excel? But then what do we do for poor sites which has two t=0 sites. In Excel I averaged them.
-# This results in one being >100%, another <100%. We should talk about best way to deal with this
+# To compare these sites, calculate 'PercentInitial' for each Group*Drainage combination
+# Because of the sort above, we're guaranteed that the youngest, biggest BA is first
 snagba <- ddply(snagba, .(Group, Drainage), transform, 
                 PercentInitial=BA/BA[1] * 100)
 
@@ -54,11 +52,15 @@ printlog("Doing QC...")
 # Since this is such a short dataset I printed the data out. Best way for me to check the data.
 print(snagba)
 
-if(any(snagba$PercentInitial > 100)) {
-    printlog("WARNING: removing data points with more post-fire BA than initially:")
-    print(subset(snagba, PercentInitial > 100))
-    snagba <- subset(snagba, PercentInitial <= 100)
-}
+# Making a graph is also useful!
+p <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Site,Drainage))) + geom_line()
+print(p)
+
+# if(any(snagba$PercentInitial > 100)) {
+#     printlog("WARNING: removing data points with more post-fire BA than initially:")
+#     print(subset(snagba, PercentInitial > 100))
+#     snagba <- subset(snagba, PercentInitial <= 100)
+# }
 
 # Deleted code here since was due to wrong PercentInitial calculation for poorly drained sites.
 
