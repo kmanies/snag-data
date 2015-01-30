@@ -28,20 +28,21 @@ sink(file="snagBA.txt", split=T)
 # Read main data file
 fn <- "BAoverTimev3.csv"
 printlog("Reading", fn, "...")
-snagba<-read.csv(fn, header=TRUE)
+snagba<-read.csv(fn, header=TRUE, stringsAsFactors=FALSE)
 
 # Calculate PercentInitial
 printlog("Computing PercentInitial...")
 
-# Because poorly drained sites have different site names, need to assign new value, StatSite
-snagba$StatSite <- ifelse(snagba$Drainage=="poorly", "Mixed", snagba$Site)
+# Because the sites from 'DG' have different site names, but are treated as a chronosequence,
+# we assign a new 'Group' field
+snagba$Group <- ifelse(snagba$Source=="DG", "SourceDG", snagba$Site)
 snagba <- snagba[order(snagba$Site, snagba$Drainage, snagba$Age),]
 
 # By using the highest BA for this calculation you end up using the 4 yr old site for poorly drained
 # sites. Is this the best way? Is it better to do it on the youngest sites, which is what I did
 # in Excel? But then what do we do for poor sites which has two t=0 sites. In Excel I averaged them.
 # This results in one being >100%, another <100%. We should talk about best way to deal with this
-snagba <- ddply(snagba, .(StatSite, Drainage), transform, 
+snagba <- ddply(snagba, .(Group, Drainage), transform, 
                 PercentInitial=BA/BA[1] * 100)
 
 # QC data, looking for any problems
