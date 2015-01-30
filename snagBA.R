@@ -85,7 +85,7 @@ readline("[RETURN]")
 # Graph base plot
 scatter0 <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Drainage)))
 
-# Graph linear data and residuals
+# Graph linear data and residuals; note this does not fit well
 printlog("Making linear plots...")
 scatter1 <- scatter0 +
     geom_point() +
@@ -96,26 +96,41 @@ scatter1 <- scatter0 +
 ggsave("scatter1-linear.pdf")
 readline("[RETURN]")
 
+
+# Let's try fitting a sigmoid-style model
+library(survival)
+sigmoid <- nls(PercentInitial ~ 100 / (1 + exp(-slope * (Age-Age_mid))), data=snagba, 
+             start=list(slope=-2, Age_mid=10))
+print(summary(sigmoid))
+snagba$sigmoid <- predict(sigmoid)
+scatter3 <- scatter0 +
+    geom_point() +
+    geom_line(data=snagba, aes(y=sigmoid), linetype=2, size=1, color='black')
+print(scatter3)
+ggsave("scatter3-sigmoid.pdf")
+readline("[RETURN]")
+
+
 # Run a linear model on the log of PercentInitial
 
 # Putting this code back in because the log transform you had in scatter3 didn't work
 # (My scatter 2 & 3 looked the same). Also now that data are corrected linear
 # and, likely, the log fit are decent fits.
 
-printlog("Computing log model...")
-logsnagba.lm <- lm(log(PercentInitial) ~ Age, data=snagba)
-logsnagba.res <- resid(logsnagba.lm)
-snagba$loglm <- predict(logsnagba.lm)
-print(summary(logsnagba.lm))
-par(mfrow=c(2,2))
-plot(logsnagba.lm)
-
-printlog("Saving log plot diagnostics")
-pdf("logsnagba.lm.pdf")
-par(mfrow=c(2,2)) # plot into a 2x2 grid
-plot(logsnagba.lm)
-dev.off()
-readline("[RETURN]")
+# printlog("Computing log model...")
+# logsnagba.lm <- lm(log(PercentInitial) ~ Age, data=snagba)
+# logsnagba.res <- resid(logsnagba.lm)
+# snagba$loglm <- predict(logsnagba.lm)
+# print(summary(logsnagba.lm))
+# par(mfrow=c(2,2))
+# plot(logsnagba.lm)
+# 
+# printlog("Saving log plot diagnostics")
+# pdf("logsnagba.lm.pdf")
+# par(mfrow=c(2,2)) # plot into a 2x2 grid
+# plot(logsnagba.lm)
+# dev.off()
+# readline("[RETURN]")
 
 # Took out smoothing graph now that data have been corrected.
 # Also redid how log graph is done as your code wasn't working for me
