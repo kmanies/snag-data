@@ -36,7 +36,10 @@ printlog("Computing PercentInitial...")
 # Because the sites from 'DG' have different site names, but are treated as a chronosequence,
 # we assign a new 'Group' field
 snagba$Group <- ifelse(snagba$Source=="DG", "SourceDG", snagba$Site)
-snagba <- snagba[order(snagba$Site, snagba$Drainage, snagba$Age),]
+
+# We want to sort by group, ensuring that largest values come first if any ties
+snagba <- snagba[order(snagba$BA, decreasing=TRUE),]
+snagba <- snagba[order(snagba$Group, snagba$Drainage, snagba$Age),]
 
 # By using the highest BA for this calculation you end up using the 4 yr old site for poorly drained
 # sites. Is this the best way? Is it better to do it on the youngest sites, which is what I did
