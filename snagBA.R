@@ -32,30 +32,39 @@ snagba<-read.csv(fn, header=TRUE)
 
 # Calculate PercentInitial
 printlog("Computing PercentInitial...")
+
+# Because poorly drained sites have different site names, need to assign new value, StatSite
+snagba$StatSite <- ifelse(snagba$Drainage=="poorly", "Mixed", snagba$Site)
 snagba <- snagba[order(snagba$Site, snagba$Drainage, snagba$Age),]
-snagba <- ddply(snagba, .(Site, Drainage), transform, 
+
+# By using the highest BA for this calculation you end up using the 4 yr old site for poorly drained
+# sites. Is this the best way? Is it better to do it on the youngest sites, which is what I did
+# in Excel? But then what do we do for poor sites which has two t=0 sites. In Excel I averaged them.
+# This results in one being >100%, another <100%. We should talk about best way to deal with this
+snagba <- ddply(snagba, .(StatSite, Drainage), transform, 
                 PercentInitial=BA/BA[1] * 100)
 
 # QC data, looking for any problems
 printlog("Doing QC...")
+
+# Since this is such a short dataset I printed the data out. Best way for me to check the data.
+print(snagba)
+
 if(any(snagba$PercentInitial > 100)) {
     printlog("WARNING: removing data points with more post-fire BA than initially:")
     print(subset(snagba, PercentInitial > 100))
     snagba <- subset(snagba, PercentInitial <= 100)
 }
-if(any(snagba$Age > 20 & snagba$PercentInitial == 100)) {
-    printlog("WARNING: removing data points > 20 years and no loss:")
-    print(subset(snagba, snagba$Age > 20 & snagba$PercentInitial == 100))
-    snagba <- subset(snagba, snagba$Age <= 20 | snagba$PercentInitial < 100)
-}
+
+# Deleted code here since was due to wrong PercentInitial calculation for poorly drained sites.
+
 readline("[RETURN]")
 
-#snagba$logPercentInitial <- log(snagba$PercentInitial)
-
 # Run a linear model on PercentInitial
-printlog("Computing (a clearly inappropriate) linear model...")
+printlog("Computing linear model...")
 snagba.lm <- lm(PercentInitial~Age, data=snagba)
 snagba.res <- resid(snagba.lm)
+snagba$lm <- predict(snagba.lm)
 print(summary(snagba.lm))
 par(mfrow=c(2,2)) # plot into a 2x2 grid
 plot(snagba.lm)
@@ -67,58 +76,71 @@ plot(snagba.lm)
 dev.off()
 readline("[RETURN]")
 
-# Run a linear model on the log of PercentInitial
-#logsnagba.lm <- lm(log(PercentInitial) ~ Age, data=snagba)
-#logsnagba.res <- resid(logsnagba.lm)
-#summary(logsnagba.lm)
+# Graph base plot
+scatter0 <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Drainage)))
 
-# Graph data and residuals
-printlog("Making plots...")
-scatter0 <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Site, Drainage))) +
+# Graph linear data and residuals
+printlog("Making linear plots...")
+scatter1 <- scatter0 +
     geom_point() +
     xlab("Time since disturbance (years)") +
-    ylab("Initial basal area (%)")
+    ylab("Initial basal area (%)") +
+    geom_line(data=snagba, aes(y=lm), linetype=2, size=1, color='black')
 
-printlog("Points with a smoother applied...")
-scatter1 <- scatter0 +
-    geom_smooth(group=1, method='loess', color='black')
-print(scatter1)
-ggsave("scatter1.pdf")
+ggsave("scatter1-linear.pdf")
 readline("[RETURN]")
 
-printlog("Linear-scale plot...")
-scatter2 <- scatter0 +
+# Run a linear model on the log of PercentInitial
+
+# Putting this code back in because the log transform you had in scatter3 didn't work
+# (My scatter 2 & 3 looked the same). Also now that data are corrected linear
+# and, likely, the log fit are decent fits.
+
+printlog("Computing log model...")
+logsnagba.lm <- lm(log(PercentInitial) ~ Age, data=snagba)
+logsnagba.res <- resid(logsnagba.lm)
+snagba$loglm <- predict(logsnagba.lm)
+print(summary(logsnagba.lm))
+par(mfrow=c(2,2))
+plot(logsnagba.lm)
+
+printlog("Saving log plot diagnostics")
+pdf("logsnagba.lm.pdf")
+par(mfrow=c(2,2)) # plot into a 2x2 grid
+plot(logsnagba.lm)
+dev.off()
+readline("[RETURN]")
+
+# Took out smoothing graph now that data have been corrected.
+# Also redid how log graph is done as your code wasn't working for me
+# (both linear and log plots looked the same)
+
+printlog("log-scale plot...")
+scatter2 <- ggplot(snagba, aes(Age, log(PercentInitial), color=paste(Drainage))) +
     geom_point() +
-    geom_line() +
-    scale_color_discrete("Site, drainage")
-print(scatter2)
-ggsave("scatter2.pdf")
-readline("[RETURN]")
+    scale_color_discrete("Site, drainage") +
+    geom_line(data=snagba, aes(y=loglm), linetype=2, size=1, color='black')
 
-printlog("Log-scale plot...")
-scatter3 <- scatter2 + 
-    coord_trans(y="log2")
-print(scatter3)
-ggsave("scatter3.pdf")
+ggsave("scatter2-log.pdf")
 readline("[RETURN]")
 
 printlog("Everything on one page...")
 grid.arrange(scatter1 + guides(color=F), 
              scatter2 + guides(color=F), 
-             scatter3, 
              ncol=1)
 readline("[RETURN]")
 
 # What are exponential fit parameters?
 printlog("Fitting nonlinear exponential model...")
 expo1 <- nls(PercentInitial ~ a * exp(b * Age), data=snagba, 
-             start=list(a=1, b=-0.06))
+             start=list(a=100, b=-0.06))
 print(summary(expo1))
 snagba$expo1 <- predict(expo1)
-scatter4 <- scatter0 + 
-    geom_line(data=snagba, aes(y=expo1), linetype=2, size=1, color='black')
-print(scatter4)
-ggsave("scatter4-expo1.pdf")
+scatter3 <- scatter0 +
+  geom_point() +
+  geom_line(data=snagba, aes(y=expo1), linetype=2, size=1, color='black')
+print(scatter3)
+ggsave("scatter3-expo.pdf")
 readline("[RETURN]")
 
 # Print the version of R, packages used, etc.
