@@ -54,7 +54,7 @@ printlog("Doing QC...")
 print(snagba)
 
 # Making a graph is also useful!
-p <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Site,Drainage))) + geom_line()
+p <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Site,Drainage))) + geom_point() + geom_line()
 print(p)
 saveplot("basicplot")
 
@@ -76,7 +76,7 @@ snagba.lm <- lm(PercentInitial~Age, data=snagba)
 snagba.res <- resid(snagba.lm)
 snagba$lm <- predict(snagba.lm)
 print(summary(snagba.lm))
-print(AIC(snagba.lm))
+printlog("AIC =", AIC(snagba.lm))
 
 par(mfrow=c(2,2)) # plot into a 2x2 grid
 plot(snagba.lm)
@@ -91,7 +91,7 @@ readline("[RETURN]")
 # Graph base plot
 scatter0 <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Drainage))) + geom_point()
 scatter0 <- scatter0 + xlab("Time since disturbance (years)") +
-    ylab("Initial basal area (%)")
+    ylab("Basal area (% of initial)")
 
 # Graph linear data and residuals; note this does not fit well
 printlog("Making linear plots...")
@@ -101,11 +101,12 @@ readline("[RETURN]")
 
 
 # Let's try fitting a sigmoid-style model
+# In this model, "Age_mid" gives the time of 50% loss
 printlog("Computing sigmoidal model...")
 sigmoid <- nls(PercentInitial ~ 100 / (1 + exp(-slope * (Age-Age_mid))), data=snagba, 
                start=list(slope=-2, Age_mid=10))
 print(summary(sigmoid))
-print(AIC(snagba.lm))
+printlog("AIC =", AIC(sigmoid))
 snagba$sigmoid <- predict(sigmoid)
 print(scatter0 + geom_line(data=snagba, aes(y=sigmoid), linetype=2, size=1, color='black'))
 saveplot("scatter2-sigmoid")
@@ -157,7 +158,7 @@ printlog("Fitting nonlinear exponential model...")
 expo1 <- nls(PercentInitial ~ a * exp(b * Age), data=snagba, 
              start=list(a=100, b=-0.06))
 print(summary(expo1))
-print(AIC(expo1))
+printlog("AIC =", AIC(expo1))
 snagba$expo1 <- predict(expo1)
 print(scatter0 + geom_line(data=snagba, aes(y=expo1), linetype=2, size=1, color='black'))
 saveplot("scatter3-expo")
