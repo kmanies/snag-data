@@ -98,7 +98,6 @@ readline("[RETURN]")
 
 
 # Let's try fitting a sigmoid-style model
-library(survival)
 sigmoid <- nls(PercentInitial ~ 100 / (1 + exp(-slope * (Age-Age_mid))), data=snagba, 
              start=list(slope=-2, Age_mid=10))
 print(summary(sigmoid))
