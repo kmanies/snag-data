@@ -10,3 +10,4 @@ TO DO:
 * Data to compare against
 * Get raw #s - how many snags did we start with at each site?
 * Fill in individual numbers (density in trees/ha along with BA)
+* KM to start writing methods
