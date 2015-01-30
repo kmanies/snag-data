@@ -135,20 +135,20 @@ readline("[RETURN]")
 # Also redid how log graph is done as your code wasn't working for me
 # (both linear and log plots looked the same)
 
-printlog("log-scale plot...")
-scatter2 <- ggplot(snagba, aes(Age, log(PercentInitial), color=paste(Drainage))) +
-    geom_point() +
-    scale_color_discrete("Site, drainage") +
-    geom_line(data=snagba, aes(y=loglm), linetype=2, size=1, color='black')
-
-ggsave("scatter2-log.pdf")
-readline("[RETURN]")
-
-printlog("Everything on one page...")
-grid.arrange(scatter1 + guides(color=F), 
-             scatter2 + guides(color=F), 
-             ncol=1)
-readline("[RETURN]")
+# printlog("log-scale plot...")
+# scatter2 <- ggplot(snagba, aes(Age, log(PercentInitial), color=paste(Drainage))) +
+#     geom_point() +
+#     scale_color_discrete("Site, drainage") +
+#     geom_line(data=snagba, aes(y=loglm), linetype=2, size=1, color='black')
+# 
+# ggsave("scatter2-log.pdf")
+# readline("[RETURN]")
+# 
+# printlog("Everything on one page...")
+# grid.arrange(scatter1 + guides(color=F), 
+#              scatter2 + guides(color=F), 
+#              ncol=1)
+# readline("[RETURN]")
 
 # What are exponential fit parameters?
 printlog("Fitting nonlinear exponential model...")
