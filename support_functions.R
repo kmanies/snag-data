@@ -1,3 +1,11 @@
+# Time-stamped output function
+printlog <- function( msg="", ..., ts=TRUE, cr=TRUE ) {
+    if( ts ) cat( date(), " " )
+    cat( msg, ... )
+    if( cr ) cat( "\n")
+} # printlog
+
+# -----------------------------------------------------------------------------
 # Support functions for snag analysis
 
 if(!file.exists(OUTPUT_DIR)) {
@@ -8,14 +16,6 @@ if(!file.exists(LOG_DIR)) {
     printlog("Creating", LOG_DIR)
     dir.create(LOG_DIR)
 }
-
-# -----------------------------------------------------------------------------
-# Time-stamped output function
-printlog <- function( msg="", ..., ts=TRUE, cr=TRUE ) {
-    if( ts ) cat( date(), " " )
-    cat( msg, ... )
-    if( cr ) cat( "\n")
-} # printlog
 
 # -----------------------------------------------------------------------------
 # Print dimensions of data frame

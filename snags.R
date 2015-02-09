@@ -29,141 +29,185 @@ printlog("Welcome to", SCRIPTNAME)
 # Load data and normalize
 
 # Read main data file
-snagba<-read_csv("BAoverTimev3.csv")
+snag<-read_csv("StdgDeadOverTimev4.csv")
 
-# Calculate PercentInitial
-printlog("Computing PercentInitial...")
+# Calculate BA PercentInitial
+printlog("Computing basal area PercentInitial...")
 
 # Because the sites from 'DG' have different site names, but are treated as a chronosequence,
 # we assign a new 'Group' field
-snagba$Group <- ifelse(snagba$Source=="DG", "SourceDG", snagba$Site)
+snag$Group <- ifelse(snag$Source=="DG", "SourceDG", snag$Site)
 
 # We want to sort by group, ensuring that largest values come first if any ties
-snagba <- snagba[order(snagba$BA, decreasing=TRUE),]
-snagba <- snagba[order(snagba$Group, snagba$Drainage, snagba$Age),]
+snag <- snag[order(snag$BA, decreasing=TRUE),]
+snag <- snag[order(snag$Group, snag$Drainage, snag$Age),]
 
 # To compare these sites, calculate 'PercentInitial' for each Group*Drainage combination
 # Because of the sort above, we're guaranteed that the youngest, biggest BA is first
-snagba <- ddply(snagba, .(Group, Drainage), transform, 
-                PercentInitial=BA/BA[1] * 100)
+snag <- ddply(snag, .(Group, Drainage), transform, 
+                BA.PercentInitial=BA/BA[1] * 100)
 
+# Calculate density PercentInitial
+printlog("Computing density PercentInitial...")
+
+# We want to sort by group, ensuring that largest values come first if any ties
+snag <- snag[order(snag$Density, decreasing=TRUE),]
+snag <- snag[order(snag$Group, snag$Drainage, snag$Age),]
+
+# To compare these sites, calculate 'PercentInitial' for each Group*Drainage combination
+# Because of the sort above, we're guaranteed that the youngest, biggest density is first
+snag <- ddply(snag, .(Group, Drainage), transform, 
+                density.PercentInitial=Density/Density[1] * 100)
+
+# -----------------------------------------------------------------------------
 # QC data, looking for any problems
 printlog("Doing QC...")
 
 # Since this is such a short dataset I printed the data out. Best way for me to check the data.
-print(snagba)
+print(snag)
 
 # Making a graph is also useful!
-p <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Site,Drainage))) + geom_point() + geom_line()
+p <- ggplot(snag, aes(Age, BA.PercentInitial, color=paste(Site,Drainage))) + geom_point() + geom_line() + ggtitle("Basal Area")
 print(p)
-saveplot("basicplot")
+readline("[RETURN]")
 
-# if(any(snagba$PercentInitial > 100)) {
-#     printlog("WARNING: removing data points with more post-fire BA than initially:")
-#     print(subset(snagba, PercentInitial > 100))
-#     snagba <- subset(snagba, PercentInitial <= 100)
-# }
+saveplot("BA.basicplot")
+t <- ggplot(snag, aes(Age, density.PercentInitial, color=paste(Site,Drainage))) + geom_point() + geom_line() + ggtitle("Density")
+print(t)
+saveplot("density.basicplot")
+
+if(any(snag$density.PercentInitial > 100)) {
+     printlog("WARNING: removing data points with more post-fire density than initially:")
+     print(subset(snag, density.PercentInitial > 100))
+     snag <- subset(snag, density.PercentInitial <= 100)
+ }
 
 readline("[RETURN]")
 
-
 # -----------------------------------------------------------------------------
-# Fit and evaluate models
+# Fit and evaluate models for basal area
 
 # Run a linear model on PercentInitial
+printlog("First, basal area (BA) data:")
 printlog("Computing linear model...")
-snagba.lm <- lm(PercentInitial~Age, data=snagba)
-snagba.res <- resid(snagba.lm)
-snagba$lm <- predict(snagba.lm)
-print(summary(snagba.lm))
-printlog("AIC =", AIC(snagba.lm))
+snag.lm <- lm(BA.PercentInitial~Age, data=snag)
+snag.res <- resid(snag.lm)
+snag$lm <- predict(snag.lm)
+print(summary(snag.lm))
+printlog("BA linear AIC =", AIC(snag.lm))
 
 par(mfrow=c(2,2)) # plot into a 2x2 grid
-plot(snagba.lm)
-
-# printlog("Saving plot diagnostics")
-# pdf("snagba.lm.pdf")
-# par(mfrow=c(2,2)) # plot into a 2x2 grid
-# plot(snagba.lm)
-# dev.off()
+plot(snag.lm)
 readline("[RETURN]")
 
 # Graph base plot
-scatter0 <- ggplot(snagba, aes(Age, PercentInitial, color=paste(Drainage))) + geom_point()
+scatter0 <- ggplot(snag, aes(Age, BA.PercentInitial, color=paste(Drainage))) + geom_point()
 scatter0 <- scatter0 + xlab("Time since disturbance (years)") +
     ylab("Basal area (% of initial)")
 
 # Graph linear data and residuals; note this does not fit well
 printlog("Making linear plots...")
-print(scatter0 + geom_line(data=snagba, aes(y=lm), linetype=2, size=1, color='black'))
-saveplot("scatter1-linear")
+print(scatter0 + geom_line(data=snag, aes(y=lm), linetype=2, size=1, color='black') + ggtitle("Basal Area-linear"))
+saveplot("basal_area-linear")
 readline("[RETURN]")
-
 
 # Let's try fitting a sigmoid-style model
 # In this model, "Age_mid" gives the time of 50% loss
 printlog("Computing sigmoidal model...")
-sigmoid <- nls(PercentInitial ~ 100 / (1 + exp(-slope * (Age-Age_mid))), data=snagba, 
+sigmoid <- nls(BA.PercentInitial ~ 100 / (1 + exp(-slope * (Age-Age_mid))), data=snag, 
                start=list(slope=-2, Age_mid=10))
 print(summary(sigmoid))
-printlog("AIC =", AIC(sigmoid))
-snagba$sigmoid <- predict(sigmoid)
-print(scatter0 + geom_line(data=snagba, aes(y=sigmoid), linetype=2, size=1, color='black'))
-saveplot("scatter2-sigmoid")
+printlog("BA sigmoid AIC =", AIC(sigmoid))
+snag$sigmoid <- predict(sigmoid)
+print(scatter0 + geom_line(data=snag, aes(y=sigmoid), linetype=2, size=1, color='black') + ggtitle("Basal Area-sigmoid"))
+saveplot("basal_area-sigmoid")
 readline("[RETURN]")
 
+# What are exponential fit parameters?
+printlog("Fitting nonlinear exponential model...")
+expo1 <- nls(BA.PercentInitial ~ a * exp(b * Age), data=snag, 
+             start=list(a=100, b=-0.06))
+print(summary(expo1))
+printlog("expo AIC =", AIC(expo1))
+snag$expo1 <- predict(expo1)
+print(scatter0 + geom_line(data=snag, aes(y=expo1), linetype=2, size=1, color='black') + ggtitle("Basal Area-exponential"))
+saveplot("basal_area-expo")
+readline("[RETURN]")
 
-# Run a linear model on the log of PercentInitial
-
-# Putting this code back in because the log transform you had in scatter3 didn't work
-# (My scatter 2 & 3 looked the same). Also now that data are corrected linear
-# and, likely, the log fit are decent fits.
-
+# Run a linear model on the log of BA.PercentInitial
 # printlog("Computing log model...")
-# logsnagba.lm <- lm(log(PercentInitial) ~ Age, data=snagba)
-# logsnagba.res <- resid(logsnagba.lm)
-# snagba$loglm <- predict(logsnagba.lm)
-# print(summary(logsnagba.lm))
+# logsnag.lm <- lm(log(PercentInitial) ~ Age, data=snag)
+# logsnag.res <- resid(logsnag.lm)
+# snag$loglm <- predict(logsnag.lm)
+# print(summary(logsnag.lm))
 # par(mfrow=c(2,2))
-# plot(logsnagba.lm)
+# plot(logsnag.lm)
 # 
 # printlog("Saving log plot diagnostics")
-# pdf("logsnagba.lm.pdf")
+# pdf("logsnag.lm.pdf")
 # par(mfrow=c(2,2)) # plot into a 2x2 grid
-# plot(logsnagba.lm)
+# plot(logsnag.lm)
 # dev.off()
 # readline("[RETURN]")
-
-# Took out smoothing graph now that data have been corrected.
-# Also redid how log graph is done as your code wasn't working for me
-# (both linear and log plots looked the same)
-
+#
 # printlog("log-scale plot...")
-# scatter2 <- ggplot(snagba, aes(Age, log(PercentInitial), color=paste(Drainage))) +
+# scatter2 <- ggplot(snag, aes(Age, log(PercentInitial), color=paste(Drainage))) +
 #     geom_point() +
 #     scale_color_discrete("Site, drainage") +
-#     geom_line(data=snagba, aes(y=loglm), linetype=2, size=1, color='black')
+#     geom_line(data=snag, aes(y=loglm), linetype=2, size=1, color='black')
 # 
 # ggsave("scatter2-log.pdf")
 # readline("[RETURN]")
 # 
-# printlog("Everything on one page...")
-# grid.arrange(scatter1 + guides(color=F), 
-#              scatter2 + guides(color=F), 
-#              ncol=1)
-# readline("[RETURN]")
+
+# -----------------------------------------------------------------------------
+# Fit and evaluate models for density
+
+# Run a linear model on PercentInitial
+printlog("Now, working with density.")
+printlog("Computing linear model...")
+snagd.lm <- lm(density.PercentInitial~Age, data=snag)
+snagd.res <- resid(snagd.lm)
+snag$d_lm <- predict(snagd.lm)
+print(summary(snagd.lm))
+printlog("density AIC =", AIC(snagd.lm))
+
+par(mfrow=c(2,2)) # plot into a 2x2 grid
+plot(snagd.lm)
+readline("[RETURN]")
+
+# Graph base plot
+scatter10 <- ggplot(snag, aes(Age, density.PercentInitial, color=paste(Drainage))) + geom_point()
+scatter10 <- scatter10 + xlab("Time since disturbance (years)") +
+    ylab("Density (% of initial)") +
+
+# Graph linear data and residuals; does this also not fit well?
+printlog("Making linear plots...")
+print(scatter10 + geom_line(data=snag, aes(y=lm), linetype=2, size=1, color='black') + ggtitle("Density-linear"))
+saveplot("density-linear")
+readline("[RETURN]")
+
+# Let's try fitting a sigmoid-style model
+# In this model, "Age_mid" gives the time of 50% loss
+printlog("Computing sigmoidal model...")
+sigmoid_d <- nls(density.PercentInitial ~ 100 / (1 + exp(-slope * (Age-Age_mid))), data=snag, 
+               start=list(slope=-2, Age_mid=10))
+print(summary(sigmoid_d))
+printlog("AIC =", AIC(sigmoid_d))
+snag$sigmoid <- predict(sigmoid_d)
+print(scatter10 + geom_line(data=snag, aes(y=sigmoid), linetype=2, size=1, color='black') + ggtitle("Density-linear"))
+saveplot("density-sigmoid")
+readline("[RETURN]")
 
 # What are exponential fit parameters?
 printlog("Fitting nonlinear exponential model...")
-expo1 <- nls(PercentInitial ~ a * exp(b * Age), data=snagba, 
+expo2 <- nls(density.PercentInitial ~ a * exp(b * Age), data=snag, 
              start=list(a=100, b=-0.06))
-print(summary(expo1))
-printlog("AIC =", AIC(expo1))
-snagba$expo1 <- predict(expo1)
-print(scatter0 + geom_line(data=snagba, aes(y=expo1), linetype=2, size=1, color='black'))
-saveplot("scatter3-expo")
-readline("[RETURN]")
-
+print(summary(expo2))
+printlog("expo AIC =", AIC(expo2))
+snag$expo2 <- predict(expo2)
+print(scatter0 + geom_line(data=snag, aes(y=expo2), linetype=2, size=1, color='black') + ggtitle("Density-exponential"))
+saveplot("density-expo")
 
 # Print the version of R, packages used, etc.
 printlog("All done with", SCRIPTNAME)

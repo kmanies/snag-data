@@ -1,0 +1,25 @@
+Source,Site,Drainage,Sampling Yr,Age,Density,BA,Region
+BBL,Thompson-1998,somewhat_poorly,2012,14,1840,2847,Central Canada
+BBL,Thompson-1998,somewhat_poorly,2002,4,4350,6072,Central Canada
+BBL,Thompson-1998,somewhat_poorly,1999,1,4650,6191,Central Canada
+BBL,Thompson-1998,moderately,2012,14,2600,290,Central Canada
+BBL,Thompson-1998,moderately,2007,9,5600,5883,Central Canada
+BBL,Thompson-1998,moderately,2002,4,6450,6570,Central Canada
+BBL,Thompson-1998,moderately,1999,1,6700,6854,Central Canada
+BBL,Thompson-1995,moderately,2012,17,500,858,Central Canada
+BBL,Thompson-1995,moderately,2007,12,1350,2372,Central Canada
+BBL,Thompson-1995,moderately,2002,7,4250,9364,Central Canada
+BBL,Thompson-1995,moderately,1999,4,4950,10235,Central Canada
+DG,Chisholm'01,poorly,2010,9,13867,153,Western Canada
+DG,HouseRiver2,poorly,2010,8,8400,149,Western Canada
+DG,HR1Burn'02,poorly,2010,8,11733,91,Western Canada
+DG,MarianaLake'95,poorly,2010,15,9600,8,Western Canada
+DG,NodderBogN,poorly,2011,0,17733,212,Western Canada
+DG,NodderBogS,poorly,2011,0,14533,255,Western Canada
+DG,Saltaux'01,poorly,2010,8,4000,76,Western Canada
+DG,Wabasca,poorly,2010,28,1733,21,Western Canada
+DG,BC'06,poorly,2010,4,37200,250,Western Canada
+KLM,DeltaTower,well,2000,1,4604,3355,Alaska
+KLM,DeltaTower,well,2012,13,1378,824,Alaska
+KLM,DeltaCreek,moderately,2000,1,5421,3950,Alaska
+KLM,DeltaCreek,moderately,2012,13,3855,2946,Alaska
