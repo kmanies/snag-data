@@ -9,7 +9,14 @@ means and do the reading when I get back from New Zealand.
 
 TO DO:
 * ~~Clean up repository and script~~
+  ---KLM made script for density calcs to compare with basal area
+  ---Did some preliminary clean up of script
+
 * Do some reading - Tom Spies, Virginie Angers, etc.
+  ---Added folder called papers where we can put relavant papers, added two
+
 * Think about implications? E.g.: radiative forcing; CWD inputs; C dynamics
+
 * Data to compare against
+
 * KM to start writing methods
