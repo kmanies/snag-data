@@ -1,21 +1,20 @@
+# Useful support functions and settings
+# BBL April 3, 2015
+
+OUTPUT_DIR		<- "outputs/"
+LOG_DIR			<- "logs/"
+SEPARATOR		<- "-------------------"
+
+# -----------------------------------------------------------------------------
+# Support functions for snag analysis
+
+# -----------------------------------------------------------------------------
 # Time-stamped output function
 printlog <- function( msg="", ..., ts=TRUE, cr=TRUE ) {
     if( ts ) cat( date(), " " )
     cat( msg, ... )
     if( cr ) cat( "\n")
 } # printlog
-
-# -----------------------------------------------------------------------------
-# Support functions for snag analysis
-
-if(!file.exists(OUTPUT_DIR)) {
-    printlog("Creating", OUTPUT_DIR)
-    dir.create(OUTPUT_DIR)
-}
-if(!file.exists(LOG_DIR)) {
-    printlog("Creating", LOG_DIR)
-    dir.create(LOG_DIR)
-}
 
 # -----------------------------------------------------------------------------
 # Print dimensions of data frame
@@ -55,9 +54,19 @@ savedata <- function(df, extension=".csv", scriptfolder=TRUE, ...) {
 # -----------------------------------------------------------------------------
 # Open a csv file and return data
 read_csv <- function(fn, datadir=".", ...) {
-    fqfn <- paste(datadir, fn, sep="/")
+    fqfn <- file.path(datadir, fn)
     printlog("Opening", fqfn)
     stopifnot(file.exists(fqfn))
     read.csv(fqfn, stringsAsFactors=F, ...)
 } # read_csv
 
+
+
+if(!file.exists(OUTPUT_DIR)) {
+    printlog("Creating", OUTPUT_DIR)
+    dir.create(OUTPUT_DIR)
+}
+if(!file.exists(LOG_DIR)) {
+    printlog("Creating", LOG_DIR)
+    dir.create(LOG_DIR)
+}

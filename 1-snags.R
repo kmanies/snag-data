@@ -3,13 +3,13 @@
 # Thompson, Manitoba (B. Bond-Lamberty), and a wetland chrono-
 # sequence in Canada (M. Wotton).
 
+source("0-support_functions.R")   # support functions, in another file to keep tidy
 
-SCRIPTNAME    	<- "snags.R"
-OUTPUT_DIR		<- "outputs/"
-LOG_DIR			<- "logs/"
-SEPARATOR		<- "-------------------"
+SCRIPTNAME    	<- "1-snags.R"
+WAIT_RETURN     <- TRUE
 
-source("support_functions.R")   # support functions, in another file to keep tidy
+INPUT_FILE      <- "rawdata/StdgDeadOverTimev4.csv"
+
 
 # -----------------------------------------------------------------------------
 # MAIN
@@ -20,7 +20,7 @@ theme_set(theme_bw())
 library(gridExtra)
 library(plyr)
 
-sink(paste(LOG_DIR, paste0(SCRIPTNAME, ".txt"), sep="/"), split=T)
+sink(file.path(LOG_DIR, paste0(SCRIPTNAME, ".txt")), split=T)
 
 printlog("Welcome to", SCRIPTNAME)
 
@@ -29,7 +29,7 @@ printlog("Welcome to", SCRIPTNAME)
 # Load data and normalize
 
 # Read main data file
-snag<-read_csv("StdgDeadOverTimev4.csv")
+snag <- read_csv(INPUT_FILE)
 
 # Calculate BA PercentInitial
 printlog("Computing basal area PercentInitial...")
@@ -67,12 +67,14 @@ printlog("Doing QC...")
 print(snag)
 
 # Making a graph is also useful!
-p <- ggplot(snag, aes(Age, BA.PercentInitial, color=paste(Site,Drainage))) + geom_point() + geom_line() + ggtitle("Basal Area")
+p <- ggplot(snag, aes(Age, BA.PercentInitial, color=paste(Site,Drainage))) 
+p <- p + geom_point() + geom_line() + ggtitle("Basal Area")
 print(p)
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 saveplot("BA.basicplot")
-t <- ggplot(snag, aes(Age, density.PercentInitial, color=paste(Site,Drainage))) + geom_point() + geom_line() + ggtitle("Density")
+t <- ggplot(snag, aes(Age, density.PercentInitial, color=paste(Site,Drainage))) 
+p <- p + geom_point() + geom_line() + ggtitle("Density")
 print(t)
 saveplot("density.basicplot")
 
@@ -82,7 +84,7 @@ if(any(snag$density.PercentInitial > 100)) {
      snag <- subset(snag, density.PercentInitial <= 100)
  }
 
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # -----------------------------------------------------------------------------
 # Fit and evaluate models for basal area
@@ -98,7 +100,7 @@ printlog("BA linear AIC =", AIC(snag.lm))
 
 par(mfrow=c(2,2)) # plot into a 2x2 grid
 plot(snag.lm)
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # Graph base plot
 scatter0 <- ggplot(snag, aes(Age, BA.PercentInitial, color=paste(Drainage))) + geom_point()
@@ -109,7 +111,7 @@ scatter0 <- scatter0 + xlab("Time since disturbance (years)") +
 printlog("Making linear plots...")
 print(scatter0 + geom_line(data=snag, aes(y=lm), linetype=2, size=1, color='black') + ggtitle("Basal Area-linear"))
 saveplot("basal_area-linear")
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # Let's try fitting a sigmoid-style model
 # In this model, "Age_mid" gives the time of 50% loss
@@ -121,7 +123,7 @@ printlog("BA sigmoid AIC =", AIC(sigmoid))
 snag$sigmoid <- predict(sigmoid)
 print(scatter0 + geom_line(data=snag, aes(y=sigmoid), linetype=2, size=1, color='black') + ggtitle("Basal Area-sigmoid"))
 saveplot("basal_area-sigmoid")
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # What are exponential fit parameters?
 printlog("Fitting nonlinear exponential model...")
@@ -132,7 +134,7 @@ printlog("expo AIC =", AIC(expo1))
 snag$expo1 <- predict(expo1)
 print(scatter0 + geom_line(data=snag, aes(y=expo1), linetype=2, size=1, color='black') + ggtitle("Basal Area-exponential"))
 saveplot("basal_area-expo")
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # Run a linear model on the log of BA.PercentInitial
 # printlog("Computing log model...")
@@ -148,7 +150,7 @@ readline("[RETURN]")
 # par(mfrow=c(2,2)) # plot into a 2x2 grid
 # plot(logsnag.lm)
 # dev.off()
-# readline("[RETURN]")
+# if(WAIT_RETURN) readline("[RETURN]")
 #
 # printlog("log-scale plot...")
 # scatter2 <- ggplot(snag, aes(Age, log(PercentInitial), color=paste(Drainage))) +
@@ -157,7 +159,7 @@ readline("[RETURN]")
 #     geom_line(data=snag, aes(y=loglm), linetype=2, size=1, color='black')
 # 
 # ggsave("scatter2-log.pdf")
-# readline("[RETURN]")
+# if(WAIT_RETURN) readline("[RETURN]")
 # 
 
 # -----------------------------------------------------------------------------
@@ -174,7 +176,7 @@ printlog("density AIC =", AIC(snagd.lm))
 
 par(mfrow=c(2,2)) # plot into a 2x2 grid
 plot(snagd.lm)
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # Graph base plot
 scatter10 <- ggplot(snag, aes(Age, density.PercentInitial, color=paste(Drainage))) + geom_point()
@@ -185,7 +187,7 @@ scatter10 <- scatter10 + xlab("Time since disturbance (years)") +
 printlog("Making linear plots...")
 print(scatter10 + geom_line(data=snag, aes(y=lm), linetype=2, size=1, color='black') + ggtitle("Density-linear"))
 saveplot("density-linear")
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # Let's try fitting a sigmoid-style model
 # In this model, "Age_mid" gives the time of 50% loss
@@ -197,7 +199,7 @@ printlog("AIC =", AIC(sigmoid_d))
 snag$sigmoid <- predict(sigmoid_d)
 print(scatter10 + geom_line(data=snag, aes(y=sigmoid), linetype=2, size=1, color='black') + ggtitle("Density-linear"))
 saveplot("density-sigmoid")
-readline("[RETURN]")
+if(WAIT_RETURN) readline("[RETURN]")
 
 # What are exponential fit parameters?
 printlog("Fitting nonlinear exponential model...")
