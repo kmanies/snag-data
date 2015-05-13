@@ -1,10 +1,13 @@
+# Gitignore file for snag-data
 
-*.pdf
-
+# R files
 .Rhistory
+.Rproj.user
 
+# OS files
 .DS_Store
 
+# Script outputs
+outputs/
 logs/
-
-.Rproj.user
+*.pdf
