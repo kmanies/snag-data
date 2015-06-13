@@ -25,6 +25,8 @@ TO DO:
 
 LIST OF RELEVANT PAPERS:
 
+Note - Bashir and MacLean ms reviewed for FEM has good intro to mortality
+
 [Boulanger & Sirois 2006](http://dx.doi.org/10.1139/X06-070): Data from Quebec. "Moreover, fire-created
  snags, which decompose slowly, may remain standing for a long time (Wei et al., 1997; 
 Tinkerand Knight 2000). As a result, it has been suggested that fire hampers the
